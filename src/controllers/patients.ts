@@ -27,35 +27,57 @@ export const getPatientById = async (req: express.Request, res: express.Response
   }
 };
 
-export const createPatient = async (req: express.Request, res: express.Response) => {
+export const getPatientByFirstName = async (req: express.Request, res: express.Response) => {
   try {
-    const { name, age, gender } = req.body;
+    const { firstName } = req.params;
+    const patient = await PatientModel.findOne({ firstName });
 
-    if (!name || !age || !gender) {
-      return res.sendStatus(400);
+    if (!patient) {
+      return res.sendStatus(404);
     }
 
-    const patient = await PatientModel.create({ name, age, gender });
-
-    return res.status(201).json(patient);
+    return res.status(200).json(patient);
   } catch (error) {
     console.log(error);
     return res.sendStatus(500);
   }
 };
 
+
+export const createPatient = async (req: express.Request, res: express.Response) => {
+  try {
+    const { firstName, lastName, age, gender, contact } = req.body;
+
+    if (!firstName || !age || !gender || !contact) {
+      return res.sendStatus(400);
+    }
+
+    const patient = await PatientModel.create({ firstName,lastName, age, gender, contact });
+
+    return res.status(201).json(patient);
+  } catch (error) {
+    if (error.code === 11000) {
+      // Duplicate key error, contact already exists
+      return res.status(400).json({ error: 'Person with contact already exists' });
+    }
+    console.log(error);
+    return res.sendStatus(500);
+  }
+};
+
+
 export const updatePatientById = async (req: express.Request, res: express.Response) => {
   try {
     const { id } = req.params;
-    const { name, age, gender } = req.body;
+    const { firstName,lastName, age, gender, contact } = req.body;
 
-    if (!name || !age || !gender) {
+    if (!firstName || !age || !gender || !contact) {
       return res.sendStatus(400);
     }
 
     const updatedPatient = await PatientModel.findByIdAndUpdate(
       id,
-      { name, age, gender },
+      { firstName, lastName, age, gender, contact },
       { new: true }
     );
 
@@ -69,6 +91,33 @@ export const updatePatientById = async (req: express.Request, res: express.Respo
     return res.sendStatus(500);
   }
 };
+
+export const updatePatientByFirstName = async (req: express.Request, res: express.Response) => {
+  try {
+    const { firstName: paramFirstName } = req.params;
+    const { firstName, lastName, age, gender, contact } = req.body;
+
+    if (!paramFirstName || !age || !gender || !contact) {
+      return res.sendStatus(400);
+    }
+
+    const updatedPatient = await PatientModel.findOneAndUpdate(
+      { firstName: paramFirstName },
+      { firstName, lastName, age, gender, contact },
+      { new: true }
+    );
+
+    if (!updatedPatient) {
+      return res.sendStatus(404);
+    }
+
+    return res.status(200).json(updatedPatient);
+  } catch (error) {
+    console.log(error);
+    return res.sendStatus(500);
+  }
+};
+
 
 export const deletePatientById = async (req: express.Request, res: express.Response) => {
   try {
