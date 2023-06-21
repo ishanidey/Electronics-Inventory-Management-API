@@ -1,16 +1,16 @@
 import express from 'express';
-import patientsRouter from './patients';
-import visitsRouter from './visits';
+import productsRouter from './products';
+import inventorysRouter from './inventory';
 import roomsRouter from './rooms';
-import doctorsRouter from './doctors';
+import suppliersRouter from './suppliers';
 import appointmentsRouter from './appointments';
 
 export default () => {
   const router = express.Router();
-  patientsRouter(router);
-  visitsRouter(router);
+  productsRouter(router);
+  inventorysRouter(router);
   roomsRouter(router);
-  doctorsRouter(router);
+  suppliersRouter(router);
   appointmentsRouter(router);
   return router;
 };

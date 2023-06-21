@@ -1,13 +1,13 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import { PatientModel } from '../db/patients';
+import { ProductModel } from '../db/products';
 import { RoomModel } from '../db/rooms';
 
 export const getAllRooms = async (req: express.Request, res: express.Response) => {
   try {
     const rooms = await RoomModel.find().populate({
-      path: 'patients',
-      select: 'firstName lastName age',
+      path: 'products',
+      select: 'productName brandName stock',
     });
 
     return res.status(200).json(rooms);
@@ -28,7 +28,7 @@ export const addRoom = async (req: express.Request, res: express.Response) => {
       available,
       roomType,
       costRoom,
-      patients: [],
+      products: [],
     });
 
     // Save the new room to the database
@@ -41,14 +41,14 @@ export const addRoom = async (req: express.Request, res: express.Response) => {
   }
 };
 
-export const addPatientToRoom = async (req: express.Request, res: express.Response) => {
+export const addProductToRoom = async (req: express.Request, res: express.Response) => {
   try {
     const { roomNo } = req.params;
-    const { patient } = req.body;
+    const { product } = req.body;
 
-    // Check if patient ID is provided
-    if (!patient) {
-      return res.status(400).json({ message: 'Patient ID is required' });
+    // Check if product ID is provided
+    if (!product) {
+      return res.status(400).json({ message: 'Product ID is required' });
     }
 
     // Check if room exists
@@ -63,15 +63,15 @@ export const addPatientToRoom = async (req: express.Request, res: express.Respon
       return res.status(400).json({ message: 'Room is not available' });
     }
 
-    // Check if patient exists
-    const existingPatient = await PatientModel.findById(patient);
+    // Check if product exists
+    const existingProduct = await ProductModel.findById(product);
 
-    if (!existingPatient) {
-      return res.status(404).json({ message: 'Patient not found' });
+    if (!existingProduct) {
+      return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Add patient to the room
-    room.patients.push(patient);
+    // Add product to the room
+    room.products.push(product);
     room.available -= 1;
 
     // Save the updated room to the database
@@ -95,12 +95,12 @@ export const getAvailableRooms: express.RequestHandler = async (req, res) => {
   }
 };
 
-export const getRoomWithPatients: express.RequestHandler = async (req, res) => {
+export const getRoomWithProducts: express.RequestHandler = async (req, res) => {
   try {
     const { roomNo } = req.params;
 
-    // Find the room with the given room number and populate the patients field
-    const room = await RoomModel.findOne({ roomNo }).populate('patients');
+    // Find the room with the given room number and populate the products field
+    const room = await RoomModel.findOne({ roomNo }).populate('products');
 
     // Check if the room exists
     if (!room) {
@@ -114,7 +114,7 @@ export const getRoomWithPatients: express.RequestHandler = async (req, res) => {
   }
 };
 
-export const deletePatientFromRoom: express.RequestHandler = async (req, res) => {
+export const deleteProductFromRoom: express.RequestHandler = async (req, res) => {
   try {
     const { roomNo, id } = req.params;
 
@@ -129,19 +129,19 @@ export const deletePatientFromRoom: express.RequestHandler = async (req, res) =>
     // Convert the id string to an ObjectId
     const objectId = new mongoose.Types.ObjectId(id);
 
-    // Check if the patient exists in the room
-    if (!room.patients.includes(objectId)) {
-      return res.status(404).json({ message: 'Patient not found in the room' });
+    // Check if the product exists in the room
+    if (!room.products.includes(objectId)) {
+      return res.status(404).json({ message: 'Product not found in the room' });
     }
 
-    // Remove the patient from the room
-    room.patients = room.patients.filter((patientId) => patientId.toString() !== objectId.toString());
+    // Remove the product from the room
+    room.products = room.products.filter((productId) => productId.toString() !== objectId.toString());
     room.available++;
 
     // Save the updated room to the database
     await room.save();
 
-    return res.status(200).json({ message: 'Patient removed from the room' });
+    return res.status(200).json({ message: 'Product removed from the room' });
   } catch (error) {
     console.log(error);
     return res.sendStatus(500);

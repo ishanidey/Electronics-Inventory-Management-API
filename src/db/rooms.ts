@@ -1,12 +1,12 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { PatientModel } from './patients';
+import { ProductModel } from './products';
 
 interface Room extends Document {
   roomNo: number;
   available: number;
   roomType: string;
   costRoom: number;
-  patients: mongoose.Types.ObjectId[];
+  products: mongoose.Types.ObjectId[];
 }
 
 const roomSchema = new Schema<Room>({
@@ -14,16 +14,16 @@ const roomSchema = new Schema<Room>({
   available: { type: Number, required: true },
   roomType: { type: String, required: true },
   costRoom: { type: Number, required: true },
-  patients: [{ type: Schema.Types.ObjectId, ref: 'Patient' }],
+  products: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
 });
 
-roomSchema.path('patients').validate(async (values) => {
+roomSchema.path('products').validate(async (values) => {
   if (values.length === 0) {
     return true;
   }
 
-  const count = await PatientModel.countDocuments({ _id: { $in: values } });
+  const count = await ProductModel.countDocuments({ _id: { $in: values } });
   return count === values.length;
-}, 'Invalid patient IDs');
+}, 'Invalid product IDs');
 
 export const RoomModel = mongoose.model<Room>('Room', roomSchema);

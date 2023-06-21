@@ -4,11 +4,11 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import cors from 'cors';
-
-import router from './router';
+import path from 'path';
 import mongoose from 'mongoose';
 
 const app = express();
+const router = express.Router();
 
 app.use(cors({
   credentials: true,
@@ -17,6 +17,9 @@ app.use(cors({
 app.use(compression());
 app.use(cookieParser());
 app.use(bodyParser.json());
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 const server = http.createServer(app);
 
@@ -30,5 +33,18 @@ mongoose.Promise = Promise;
 mongoose.connect(MONGO_URL);
 mongoose.connection.on('error', (error: Error) => console.log(error));
 
-app.use('/', router());
+router.get('/', (req, res) => {
+  res.render('index');
+});
 
+router.get('/products', (req, res) => {
+  res.render('products');
+});
+
+// Register the router with the app
+app.use('/', router);
+
+// Add the following middleware to handle undefined routes
+app.use((req, res) => {
+  res.status(404).send('Page not found');
+});
