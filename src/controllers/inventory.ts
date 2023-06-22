@@ -40,7 +40,7 @@ export const getProductInventorysById = async (req: express.Request, res: expres
   }
 };
 
-export const getProductInventorysByFirstName = async (req: express.Request, res: express.Response) => {
+export const getProductInventorysByProductName = async (req: express.Request, res: express.Response) => {
   try {
     const { productName } = req.params;
     const products = await ProductModel.find({ productName });
@@ -65,7 +65,7 @@ export const getProductInventorysByFirstName = async (req: express.Request, res:
   }
 };
 
-export const getProductInventorysByContact = async (req: express.Request, res: express.Response) => {
+export const getProductInventorysByPrice = async (req: express.Request, res: express.Response) => {
   try {
     const { price } = req.params;
     const product = await ProductModel.findOne({ price });
@@ -206,5 +206,34 @@ export const deleteProductInventoryById = async (req: express.Request, res: expr
   } catch (error) {
     console.log(error);
     return res.sendStatus(500);
+  }
+};
+
+export const updateProductStock = async () => {
+  try {
+    // Retrieve all products
+    const products = await ProductModel.find();
+
+    // Iterate over each product
+    for (const product of products) {
+      // Search for inventory records of the product
+      const inventories = await InventoryModel.find({ product: product._id });
+
+      // Calculate the total amount used
+      let totalAmountUsed = 0;
+      for (const inventory of inventories) {
+        totalAmountUsed += inventory.amountUsed;
+      }
+
+      // Update the product stock
+      product.stock = totalAmountUsed;
+
+      // Save the updated product
+      await product.save();
+    }
+
+    console.log('Product stock updated successfully');
+  } catch (error) {
+    console.error('Failed to update product stock:', error);
   }
 };

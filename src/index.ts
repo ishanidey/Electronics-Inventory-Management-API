@@ -4,11 +4,12 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import cors from 'cors';
-import path from 'path';
+import  path from 'path';
+
+import router from './router';
 import mongoose from 'mongoose';
 
 const app = express();
-const router = express.Router();
 
 app.use(cors({
   credentials: true,
@@ -17,9 +18,6 @@ app.use(cors({
 app.use(compression());
 app.use(cookieParser());
 app.use(bodyParser.json());
-
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
 
 const server = http.createServer(app);
 
@@ -33,18 +31,42 @@ mongoose.Promise = Promise;
 mongoose.connect(MONGO_URL);
 mongoose.connection.on('error', (error: Error) => console.log(error));
 
-router.get('/', (req, res) => {
-  res.render('index');
+app.use(express.static(path.join(__dirname, 'public')));
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
+let isAuthenticated = false; // Authentication status
+
+// Middleware to check if user is authenticated
+const authenticate = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (isAuthenticated) {
+    next();
+  } else {
+    res.status(401).json({ message: 'Please login to access this resource' });
+  }
+};
+
+// Login route
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+
+  // Check if the username and password match the admin credentials
+  if (username === 'admin' && password === 'ishudey') {
+    isAuthenticated = true;
+    res.json({ message: 'Login successful' });
+  } else {
+    res.status(401).json({ message: 'Invalid username or password' });
+  }
 });
 
-router.get('/products', (req, res) => {
-  res.render('products');
+// Logout route
+app.get('/logout', (req, res) => {
+  isAuthenticated = false;
+  res.json({ message: 'Logout successful' });
 });
 
-// Register the router with the app
-app.use('/', router);
+// Apply authentication middleware to all routes
+app.use(authenticate);
 
-// Add the following middleware to handle undefined routes
-app.use((req, res) => {
-  res.status(404).send('Page not found');
-});
+// Apply router middleware
+app.use('/', router());

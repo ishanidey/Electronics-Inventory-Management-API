@@ -3,7 +3,8 @@ import productsRouter from './products';
 import inventorysRouter from './inventory';
 import roomsRouter from './rooms';
 import suppliersRouter from './suppliers';
-import appointmentsRouter from './appointments';
+import appointmentsRouter from './orders';
+import clientRouter from './client'; // Import the new client router
 
 export default () => {
   const router = express.Router();
@@ -12,5 +13,6 @@ export default () => {
   roomsRouter(router);
   suppliersRouter(router);
   appointmentsRouter(router);
+  router.use(clientRouter); // Add the new client router to the main router
   return router;
 };
