@@ -13,15 +13,15 @@ import {
 } from '../controllers/inventory';
 
 export default (router: express.Router) => {
-    router.get('/products/inventory', getAllProductsWithInventorys);
-    router.get('/products/inventory/:id', getProductInventorysById);
-    router.get('/products/inventory/price/:price', getProductInventorysByPrice);
-    router.get('/products/inventory/name/:productName', getProductInventorysByProductName);
-    router.get('/products/inventory/stock/:stock', getProductInventorysByStock);
-    router.get('/products/inventory/category/:category', getProductInventorysByCategory);
-    router.post('/products/inventory/:id', createProductInventory);
-    router.patch('/products/inventory/:id/:inventoryId', updateProductInventoryById);
-    router.delete('/products/inventory/:id/:inventoryId', deleteProductInventoryById);
+    router.get('/inventory', getAllProductsWithInventorys);
+    router.get('/inventory/:id', getProductInventorysById);
+    router.get('/inventory/price/:price', getProductInventorysByPrice);
+    router.get('/inventory/name/:productName', getProductInventorysByProductName);
+    router.get('/inventory/stock/:stock', getProductInventorysByStock);
+    router.get('/inventory/category/:category', getProductInventorysByCategory);
+    router.post('/inventory/:id', createProductInventory);
+    router.patch('/inventory/:id/:inventoryId', updateProductInventoryById);
+    router.delete('/inventory/:id/:inventoryId', deleteProductInventoryById);
     router.patch('/inventory/stock',updateProductStock);
 };
 

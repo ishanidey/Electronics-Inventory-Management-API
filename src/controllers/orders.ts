@@ -75,7 +75,7 @@ export const createOrder = async (req: express.Request, res: express.Response) =
   
   export const updateOrderStatus = async (req: express.Request, res: express.Response) => {
     try {
-      const { orderId } = req.params;
+      const { orderId } = req.params; // Access orderId from URL parameter
       const { status } = req.body;
   
       if (!status) {
@@ -91,6 +91,7 @@ export const createOrder = async (req: express.Request, res: express.Response) =
       if (!updatedOrder) {
         return res.sendStatus(404);
       }
+      console.log("Order found");
   
       // Check if the order status is "delivered"
       if (status === 'delivered') {
@@ -113,7 +114,6 @@ export const createOrder = async (req: express.Request, res: express.Response) =
       return res.sendStatus(500);
     }
   };
-  
   
   export const getOrdersByStatus = async (req: express.Request, res: express.Response) => {
     try {

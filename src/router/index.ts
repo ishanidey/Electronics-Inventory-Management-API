@@ -5,6 +5,7 @@ import roomsRouter from './rooms';
 import suppliersRouter from './suppliers';
 import appointmentsRouter from './orders';
 import clientRouter from './client'; // Import the new client router
+import findProductsRouter from './findProducts';
 
 export default () => {
   const router = express.Router();

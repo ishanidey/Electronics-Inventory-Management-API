@@ -4,7 +4,8 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import cors from 'cors';
-import  path from 'path';
+import path from 'path';
+import findProductsRouter from './router/findProducts';
 
 import router from './router';
 import mongoose from 'mongoose';
@@ -31,6 +32,7 @@ mongoose.Promise = Promise;
 mongoose.connect(MONGO_URL);
 mongoose.connection.on('error', (error: Error) => console.log(error));
 
+// Set up middleware and view engine
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -69,4 +71,5 @@ app.get('/logout', (req, res) => {
 app.use(authenticate);
 
 // Apply router middleware
+app.use(findProductsRouter);
 app.use('/', router());

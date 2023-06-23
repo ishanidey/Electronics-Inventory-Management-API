@@ -4,11 +4,12 @@ import { LogModel } from '../db/log';
 export const logActivity = async (activity: string, productName?: string) => {
   try {
     const log = await LogModel.create({ activity, productName });
-    console.log(`Activity logged: ${log.activity} with ${productName}`);
+    console.log(`Activity logged: ${activity}${productName ? ` with ${productName}` : ''}`);
   } catch (error) {
     console.log('Error logging activity:', error);
   }
 };
+
 
 export const getAllLogs = async (req: express.Request, res: express.Response) => {
   try {

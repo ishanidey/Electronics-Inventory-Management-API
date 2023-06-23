@@ -14,7 +14,7 @@ export default (router: express.Router) => {
     router.post('/orders', createOrder);
     router.get('/orders', getOrders);
     router.get('/orders/:id',getOrderStatus);
-    router.patch('/orders/:id/:status',updateOrderStatus);
+    router.patch('/orders/:orderId', updateOrderStatus);
     router.get('/orders/status/:status',getOrdersByStatus);
     router.get('/orders/sales/trends',analyzeOrdersbySalesTrends);
     router.get('/logs',getAllLogs);
