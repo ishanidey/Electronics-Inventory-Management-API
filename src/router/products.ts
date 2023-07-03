@@ -10,6 +10,7 @@ import {
   checkStockLevels,
   deleteProductById
 } from '../controllers/products';
+import { getNotifications } from '../controllers/notification';
 
 export default (router: express.Router) => {
   router.get('/products', getAllProducts);
@@ -21,5 +22,6 @@ export default (router: express.Router) => {
   router.patch('/products/id/:id', updateProductById);
   router.patch('/products/name/:firstName', updateProductByProductName);
   router.delete('/products/:id', deleteProductById);
+  router.get('/notifications',getNotifications);
 };
 

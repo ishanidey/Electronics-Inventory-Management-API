@@ -5,10 +5,12 @@ import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import cors from 'cors';
 import path from 'path';
-import findProductsRouter from './router/findProducts';
-
-import router from './router';
+import session, { SessionData } from 'express-session';
 import mongoose from 'mongoose';
+
+import homeRouter from './router/homeRoutes';
+import findProductsRouter from './router/findProducts';
+import router from './router';
 
 const app = express();
 
@@ -37,11 +39,24 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-let isAuthenticated = false; // Authentication status
+interface CustomSession extends SessionData {
+  isAuthenticated: boolean;
+}
 
-// Middleware to check if user is authenticated
+declare module 'express-serve-static-core' {
+  interface Request {
+    session: CustomSession;
+  }
+}
+
+app.use(session({
+  secret: 'your-secret-key', // Set a secure secret key for session encryption
+  resave: false,
+  saveUninitialized: false,
+}));
+
 const authenticate = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  if (isAuthenticated) {
+  if (req.session.isAuthenticated) {
     next();
   } else {
     res.status(401).json({ message: 'Please login to access this resource' });
@@ -54,7 +69,7 @@ app.post('/login', (req, res) => {
 
   // Check if the username and password match the admin credentials
   if (username === 'admin' && password === 'ishudey') {
-    isAuthenticated = true;
+    req.session.isAuthenticated = true; // Set the session variable to indicate authentication
     res.json({ message: 'Login successful' });
   } else {
     res.status(401).json({ message: 'Invalid username or password' });
@@ -63,13 +78,13 @@ app.post('/login', (req, res) => {
 
 // Logout route
 app.get('/logout', (req, res) => {
-  isAuthenticated = false;
+  req.session.isAuthenticated = false; // Set the session variable to indicate logout
   res.json({ message: 'Logout successful' });
 });
 
+// Apply router middleware
+app.use(homeRouter);
+app.use(findProductsRouter);
 // Apply authentication middleware to all routes
 app.use(authenticate);
-
-// Apply router middleware
-app.use(findProductsRouter);
 app.use('/', router());

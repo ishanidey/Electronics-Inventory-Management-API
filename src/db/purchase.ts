@@ -5,6 +5,8 @@ const PurchaseSchema = new mongoose.Schema({
   quantity: { type: Number, required: true },
   customerName: { type: String, required: true },
   // Add other necessary fields for the purchase
+  amountPaid: { type: Number, required: true },
 });
+
 
 export const PurchaseModel = mongoose.model('Purchase', PurchaseSchema);
