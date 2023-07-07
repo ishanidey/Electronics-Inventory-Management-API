@@ -168,12 +168,14 @@ export const checkStockLevels = async (req: express.Request, res: express.Respon
       console.log(`Notification sent: ${notification.message}`);
     });
 
-    return res.sendStatus(200);
+    console.log('Stock check completed');
+    return res.status(200).json({ message: 'Stock check completed. Please check console or notifications' });
   } catch (error) {
     console.log(error);
     return res.sendStatus(500);
   }
 };
+
 
 export const deleteProductById = async (req: express.Request, res: express.Response) => {
   try {

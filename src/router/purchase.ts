@@ -3,7 +3,10 @@ import {
     createPurchase,
     getAllPurchases,
     getCustomerBalance,
-    updateCustomerAmountPaid
+    updateCustomerAmountPaid,
+    getWeeklyPurchaseAndTopProducts,
+    getProductPerformance,
+    getRevenueBreakdown
 } from '../controllers/purchase';
 
 export default (router: express.Router) => {
@@ -11,5 +14,8 @@ export default (router: express.Router) => {
     router.get('/purchase', getAllPurchases);
     router.get('/getcustomerbalance',getCustomerBalance);
     router.patch('/updatepayment',updateCustomerAmountPaid);
+    router.get('/purchases/weekly', getWeeklyPurchaseAndTopProducts);
+    router.get('/purchase/performance/:productId', getProductPerformance);
+    router.get('/purchase/revenue', getRevenueBreakdown);
 };
 

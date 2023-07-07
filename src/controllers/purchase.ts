@@ -103,3 +103,143 @@ export const getAllPurchases = async (req: express.Request, res: express.Respons
     return res.sendStatus(500);
   }
 };
+
+
+export const getWeeklyPurchaseAndTopProducts = async (req: express.Request, res: express.Response) => {
+  try {
+    const today = new Date();
+    const startOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay());
+    const endOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() + 6);
+
+    const purchases = await PurchaseModel.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: startOfWeek,
+            $lte: endOfWeek,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    const products = await PurchaseModel.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: startOfWeek,
+            $lte: endOfWeek,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$productName",
+          quantity: { $sum: "$quantity" },
+        },
+      },
+      {
+        $sort: { quantity: -1 },
+      },
+    ]);
+
+    res.json({
+      purchasesByWeek: purchases,
+      productsPurchased: products,
+    });
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+};
+
+export const getProductPerformance = async (req: express.Request, res: express.Response) => {
+  try {
+    const productId = req.params.productId;
+
+    // Retrieve the product
+    const product = await ProductModel.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Analyze sales data for the product
+    const salesData = await PurchaseModel.aggregate([
+      {
+        $match: { productName: product.productName },
+      },
+      {
+        $group: {
+          _id: null,
+          totalQuantity: { $sum: '$quantity' },
+          totalRevenue: { $sum: { $multiply: ['$quantity', '$amountPaid'] } },
+        },
+      },
+    ]);
+
+    const productPerformance = {
+      product: product.productName,
+      totalQuantity: salesData[0]?.totalQuantity || 0,
+      totalRevenue: salesData[0]?.totalRevenue || 0,
+    };
+
+    res.json(productPerformance);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+};
+
+export const getRevenueBreakdown = async (req: express.Request, res: express.Response) => {
+  try {
+    const revenueBreakdown = await PurchaseModel.aggregate([
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'productName',
+          foreignField: 'productName',
+          as: 'product',
+        },
+      },
+      {
+        $unwind: '$product',
+      },
+      {
+        $group: {
+          _id: '$product.category',
+          revenue: {
+            $sum: {
+              $multiply: [
+                { $toDouble: '$quantity' },
+                { $toDouble: '$product.price' },
+              ],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          category: '$_id',
+          revenue: 1,
+          _id: 0,
+        },
+      },
+    ]);
+
+    res.status(200).json(revenueBreakdown);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+};

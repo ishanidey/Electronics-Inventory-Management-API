@@ -28,7 +28,7 @@ export const getProductInventorysById = async (req: express.Request, res: expres
 
     const product = await ProductModel.findById(id);
     if (!product) {
-      return res.sendStatus(404);
+      return res.status(404).json({ error: 'Product not found' });
     }
 
     const inventorys = await InventoryModel.find({ product: id });
@@ -36,14 +36,17 @@ export const getProductInventorysById = async (req: express.Request, res: expres
     return res.status(200).json({ product, inventorys, totalamountUsed });
   } catch (error) {
     console.log(error);
-    return res.sendStatus(500);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 export const getProductInventorysByProductName = async (req: express.Request, res: express.Response) => {
   try {
     const { productName } = req.params;
-    const products = await ProductModel.find({ productName });
+    const decodedProductName = decodeURIComponent(productName); // Decode the URL-encoded product name
+
+    const products = await ProductModel.find({ productName: decodedProductName });
 
     if (products.length === 0) {
       return res.sendStatus(404);
@@ -64,29 +67,21 @@ export const getProductInventorysByProductName = async (req: express.Request, re
     return res.sendStatus(500);
   }
 };
+
 
 export const getProductInventorysByPrice = async (req: express.Request, res: express.Response) => {
   try {
     const { price } = req.params;
-    const product = await ProductModel.findOne({ price });
 
-    if (!product) {
-      return res.sendStatus(404);
+    // Convert the price to a number
+    const priceValue = parseFloat(price);
+
+    // Check if the price is a valid number
+    if (isNaN(priceValue)) {
+      return res.status(400).json({ error: 'Invalid price' });
     }
 
-    const inventorys = await InventoryModel.find({ product: product._id }); // Use product._id instead of productName
-    const totalamountUsed = inventorys.reduce((total, inventory) => total + inventory.amountUsed, 0);
-    return res.status(200).json({ product, inventorys, totalamountUsed});
-  } catch (error) {
-    console.log(error);
-    return res.sendStatus(500);
-  }
-};
-
-export const getProductInventorysByStock = async (req: express.Request, res: express.Response) => {
-  try {
-    const { stock} = req.params;
-    const products = await ProductModel.find({ stock });
+    const products = await ProductModel.find({ price: { $lte: priceValue } });
 
     if (products.length === 0) {
       return res.sendStatus(404);
@@ -97,6 +92,7 @@ export const getProductInventorysByStock = async (req: express.Request, res: exp
     for (const product of products) {
       const inventorys = await InventoryModel.find({ product: product._id });
       const totalamountUsed = inventorys.reduce((total, inventory) => total + inventory.amountUsed, 0);
+
       productInventorys.push({ product, inventorys, totalamountUsed });
     }
 
@@ -106,6 +102,42 @@ export const getProductInventorysByStock = async (req: express.Request, res: exp
     return res.sendStatus(500);
   }
 };
+
+
+export const getProductInventorysByStock = async (req: express.Request, res: express.Response) => {
+  try {
+    const { stock } = req.params;
+
+    // Convert the stock to a number
+    const stockValue = parseFloat(stock);
+
+    // Check if the stock is a valid number
+    if (isNaN(stockValue)) {
+      return res.status(400).json({ error: 'Invalid stock' });
+    }
+
+    const products = await ProductModel.find({ stock: { $lte: stockValue } });
+
+    if (products.length === 0) {
+      return res.sendStatus(404);
+    }
+
+    const productInventorys = [];
+
+    for (const product of products) {
+      const inventorys = await InventoryModel.find({ product: product._id });
+      const totalamountUsed = inventorys.reduce((total, inventory) => total + inventory.amountUsed, 0);
+
+      productInventorys.push({ product, inventorys, totalamountUsed });
+    }
+
+    return res.status(200).json(productInventorys);
+  } catch (error) {
+    console.log(error);
+    return res.sendStatus(500);
+  }
+};
+
 
 
 export const getProductInventorysByCategory = async (req: express.Request, res: express.Response) => {
@@ -209,7 +241,7 @@ export const deleteProductInventoryById = async (req: express.Request, res: expr
   }
 };
 
-export const updateProductStock = async () => {
+export const updateProductStock = async (req: express.Request, res: express.Response) => {
   try {
     // Retrieve all products
     const products = await ProductModel.find();
