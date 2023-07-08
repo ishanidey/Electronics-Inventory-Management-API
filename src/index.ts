@@ -10,6 +10,7 @@ import mongoose from 'mongoose';
 
 import homeRouter from './router/homeRoutes';
 import findProductsRouter from './router/findProducts';
+import {config} from './config';
 import router from './router';
 
 const app = express();
@@ -28,7 +29,7 @@ server.listen(8080, () => {
   console.log('Server running on http://localhost:8080/');
 });
 
-const MONGO_URL = 'mongodb+srv://ishudey:ishudey@cluster0.euxuqc2.mongodb.net/?retryWrites=true&w=majority'; // DB URI
+const MONGO_URL = config.mongoURI;// DB URI
 
 mongoose.Promise = Promise;
 mongoose.connect(MONGO_URL);
