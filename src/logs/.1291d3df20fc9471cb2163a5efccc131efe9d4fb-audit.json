@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "E:\\misc\\quadratyx\\CRUD_Management\\src\\logs\\.1291d3df20fc9471cb2163a5efccc131efe9d4fb-audit.json",
+    "files": [
+        {
+            "date": 1688995955349,
+            "name": "E:\\misc\\quadratyx\\CRUD_Management\\src\\logs\\application-2023-07-10.log",
+            "hash": "ee16b4ec2f0e147a4f7c819004cf4fe22c7718d3c6f42b53b29f02bb713ac1df"
+        }
+    ],
+    "hashType": "sha256"
+}
